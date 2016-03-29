@@ -1,4 +1,4 @@
-##!/usr/bin/env bash
+#!/usr/bin/env bash
 
 
 SCRIPT_NAME='ps2.sh'
@@ -86,38 +86,24 @@ echo "'@': $@"
 while getopts ":f:vhS:T:n:e:Y:y:v" opt; do
   case $opt in
     f)  CONFIG_FILE="$OPTARG"
-        (( PARAMS_ITER+=2 ))
-        ;;
+        (( PARAMS_ITER+=2 )) ;;
     S)  SPEED="$OPTARG" 
-        (( PARAMS_ITER+=2 ))
-
-        ;;
+        (( PARAMS_ITER+=2 ))  ;;
     T)  TIME="$OPTARG"
-        (( PARAMS_ITER+=2 ))
-
-        ;;
+        (( PARAMS_ITER+=2 )) ;;
     n)  NAME="$OPTARG"
         (( PARAMS_ITER+=2 ))
         echo Name is $NAME
         ;;
     e)  EFFECTPARAMS="$OPTARG"
-        (( PARAMS_ITER+=2 ))
-
-        ;;
+        (( PARAMS_ITER+=2 )) ;;
     Y)  Y_MAX="$OPTARG"
-        (( PARAMS_ITER+=2 ))
-
-
-        ;;
+        (( PARAMS_ITER+=2 )) ;;
     v)  VERBOSE=1
-        (( PARAMS_ITER++ ))
-
-        ;;
+        (( PARAMS_ITER++ )) ;;
 
     y)  Y_MIN="$OPTARG"
-        (( PARAMS_ITER+=2 ))
-
-        ;;
+        (( PARAMS_ITER+=2 )) ;;
 
     \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -136,6 +122,8 @@ while getopts ":f:vhS:T:n:e:Y:y:v" opt; do
 
   esac
 done
+
+
 
 echo "============"
 echo "OPS: " $opt
@@ -263,10 +251,6 @@ EOF
     #declare -p START_LINE END_LINE
 #    SELECTED_DATA=$(echo "$INPUT_DATA" | awk -v multiplier="$MULTIPLIER" ' {print $1*multiplier}' )
     SELECTED_DATA=$(echo "$INPUT_DATA" | sed -n "${START_LINE},${END_LINE} p" )
-    #declare -p SELECTED_DATA
-#    echo "$SELECTED_DATA" |less
-#    exit 1
-#    sleep 1
     # Zavolat gnuplot a vytvorit snimek
     if [[ $frame -gt 1 ]]; then
     printf "%s\n" "$GP" "$SELECTED_DATA" | gnuplot
@@ -302,10 +286,7 @@ declare -p OUTPUT_DIR
 anim="${OUTPUT_DIR}/anim.mp4"
 mkdir "$OUTPUT_DIR"
 
-ffmpeg -y -r $(($SPEED*25)) -i "$TMP_DIR/%0${DIGITS}d.png" "$anim" || err "Error during ffmpeg execution"
-
-
-
+ffmpeg -y -i "$TMP_DIR/%0${DIGITS}d.png" "$anim" || err "Error during ffmpeg execution"
 
 
 
