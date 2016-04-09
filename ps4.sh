@@ -15,7 +15,7 @@ function err {
 }
 
 function cleanup {
-    rm -r "$TMP_DIR"
+  #  rm -r "$TMP_DIR"
     verbose "Removed '$TMP_DIR' temp directory."
     exit
 }
@@ -211,7 +211,7 @@ first=1
 FRAMES=40
 # Vytvorit sadu snimku (policek filmu)
 #for (( frame=1; frame<=40; frame++ ))
-for ((frame=1;frame<=LINES;frame++))
+for ((frame=1;frame<=LINES/2-5;frame++))
 
 #while [[ $frame -lt $FRAMES ]]
 do
@@ -220,34 +220,35 @@ do
     (( p%10==0 && first )) && { verbose "$p % done"; first=0; }
     (( p%10 )) && first=1
 
-#     # gnuplot script
-#     GP=$(cat << EOF
-#     set terminal png
-#     set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
-#     set datafile separator " "
-#     set timefmt "%Y"
-#  !   set xdata time
-#     set xrange [$X_RANGE]
-#     set yrange [$Y_RANGE]
-#     set title "$NAME"
-#     plot '-' with lines t"" 
-# EOF
-#     )   
-
-GP=$(cat << EOF
-            set terminal png
-            set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
-            set xrange [$X_RANGE]
-            set yrange [$Y_RANGE]
-            plot '-' with lines t""
+    # gnuplot script
+    GP=$(cat << EOF
+    set terminal png
+    set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
+    set datafile separator whitespace
+    set timefmt "%Y"
+    set xdata time
+    set format x "%Y"
+!    set xrange [$X_RANGE]
+    set yrange [$Y_RANGE]
+    set title "$NAME"
+    plot '-' using 1:2 with lines t"" 
 EOF
-)   
+    )   
+
+# GP=$(cat << EOF
+#             set terminal png
+#             set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
+#             set xrange [$X_RANGE]
+#             set yrange [$Y_RANGE]
+#             plot '-' with lines t""
+# EOF
+# )   
 
     # Pripravit data pro 1 snimek
     MULTIPLIER=$(echo $frame/40|bc -l)
     SELECTED_DATA=$(echo "$INPUT_DATA")
-    START_LINE=$((($LINES) - $frame ))
-    END_LINE=$((($LINES)  ))
+    START_LINE=$((($LINES/2) - $frame ))
+    END_LINE=$((($LINES/2) + $frame ))
     #declare -p START_LINE END_LINE
 #    SELECTED_DATA=$(echo "$INPUT_DATA" | awk -v multiplier="$MULTIPLIER" ' {print $1*multiplier}' )
     SELECTED_DATA=$(echo "$INPUT_DATA" | sed -n "${START_LINE},${END_LINE} p" )
