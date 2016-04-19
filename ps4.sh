@@ -196,7 +196,7 @@ LINES=`echo "$INPUT_DATA" | wc -l`
 DIGITS=${#LINES}
 
 echo LINES $LINES DIGITS $DIGITS 
-X_RANGE="1:$LINES"
+#X_RANGE="1:$LINES"
 Y_RANGE=$(echo "$INPUT_DATA"| awk '
     NR==1  { min=$2; max=$2 }
     $2>max { max=$2 }
@@ -225,13 +225,13 @@ do
     set terminal png
     set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
     set datafile separator whitespace
-    set timefmt "%Y"
+    set timefmt "[%Y-%m-%d %H:%M:%S]"
     set xdata time
-    set format x "%Y"
-!    set xrange [$X_RANGE]
-    set yrange [$Y_RANGE]
+    set format x "%Y-%m-%d %H:%M:%S"
+    set xrange [$X_RANGE]
+   set yrange [$Y_RANGE]
     set title "$NAME"
-    plot '-' using 1:2 with lines t"" 
+    plot '-' using 1:3 with lines t"" 
 EOF
     )   
 
