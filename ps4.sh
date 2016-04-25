@@ -27,6 +27,9 @@ USAGE: $SCRIPT_NAME [-h] [-v] [-f config_file] [-t time_format] input_data...
     ...
 EOF
 }
+function initialize_values {
+    TIMEFORMAT='[%Y/%m/%d %H:%M:%S]'
+}
 
 function verbose {
     if [[ $VERBOSE -ne 0 ]]; then
@@ -82,8 +85,9 @@ TMP_DIR=$(mktemp -d) || err "Not able to create temp directory. Aborting."
 echo "No of params:" $#
 echo "'@': $@"
 
+initialize_values
 
-while getopts ":f:vhS:T:n:e:Y:y:v" opt; do
+while getopts ":f:vhS:t:T:n:e:Y:y:g:v" opt; do
   case $opt in
     f)  CONFIG_FILE="$OPTARG"
         (( PARAMS_ITER+=2 )) ;;
@@ -101,24 +105,23 @@ while getopts ":f:vhS:T:n:e:Y:y:v" opt; do
         (( PARAMS_ITER+=2 )) ;;
     v)  VERBOSE=1
         (( PARAMS_ITER++ )) ;;
-
+    g)  GNUPLOTPARAMS+="set ""$OPTARG"$'\n'
+        (( PARAMS_ITER+=2 )) ;;
     y)  Y_MIN="$OPTARG"
         (( PARAMS_ITER+=2 )) ;;
-
+    t)  TIMEFORMAT='$OPTARG'
+        (( PARAMS_ITER+=2 )) ;;
     \?)
         echo "Invalid option: -$OPTARG" >&2
-        exit 1
-        ;;
+        exit 1 ;;
     h)
         # print help menu ...
         help_menu
         echo here...
-        exit 0
-        ;;
+        exit 0 ;;
     v)  
         echo $VERSION
-        exit 0
-        ;;
+        exit 0 ;;
 
   esac
 done
@@ -145,14 +148,20 @@ if [ ! -z "$CONFIG_FILE" ]; then
             lhs=`echo $lhs | tr '[:lower:]' '[:upper:]'`
             rhs=`trim_string $rhs`
             # you can test for variables to accept or other conditions here
+            if [[ $lhs == *"GNUPLOTPARAMS"* ]]; then
+                echo kek $rhs
+                GNUPLOTPARAMS+="set ""$rhs"$'\n'
+                continue
+            fi
             [ -z "${!lhs}" ] && declare "$lhs=$rhs"
         fi
     done < "$CONFIG_FILE"
 
 fi
 
-#( set -o posix ; set ) | less
+echo "$GNUPLOTPARAMS" |less
 
+#( set -o posix ; set ) | less
 
 echo "---" $NAME
 echo PARAMS_ITER $PARAMS_ITER
@@ -188,16 +197,19 @@ do
 
 done
 
+echo "$INPUT_DATA"|less
 
+VAR_INPUT_DATA=$(echo "$INPUT_DATA"| sed 's/\(.*\) /\1,/' )
+INPUT_DATA="$VAR_INPUT_DATA"
 # check if loaded values are ok
-
+echo "$INPUT_DATA"|less
 
 LINES=`echo "$INPUT_DATA" | wc -l`
 DIGITS=${#LINES}
 
 echo LINES $LINES DIGITS $DIGITS 
 #X_RANGE="1:$LINES"
-Y_RANGE=$(echo "$INPUT_DATA"| awk '
+Y_RANGE=$(echo "$INPUT_DATA"| awk -F "," '
     NR==1  { min=$2; max=$2 }
     $2>max { max=$2 }
     $2<min { min=$2 }
@@ -205,15 +217,17 @@ Y_RANGE=$(echo "$INPUT_DATA"| awk '
                else  print int(min)-1 ":" int(max)+1
                 }
 ' |sed 's; ;;') 
-#Y_RANGE=':20'
-#echo $Y_RANGE |less
+echo $Y_RANGE |less
+
+#Y_RANGE='-1:1'
+X_RANGE_START=`echo "$INPUT_DATA"|head -n 1 |sed 's;,.*$;;'`
+X_RANGE_END=`echo "$INPUT_DATA"|tail -n 1 |sed 's;,.*$;;'`
+echo $Y_RANGE |less
 first=1
 FRAMES=40
-# Vytvorit sadu snimku (policek filmu)
+# create set of frames
 #for (( frame=1; frame<=40; frame++ ))
 for ((frame=1;frame<=LINES/2-5;frame++))
-
-#while [[ $frame -lt $FRAMES ]]
 do
     (( p=100*frame/LINES ))
 
@@ -224,16 +238,21 @@ do
     GP=$(cat << EOF
     set terminal png
     set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
-    set datafile separator whitespace
-    set timefmt "[%Y-%m-%d %H:%M:%S]"
+    set timefmt "$TIMEFORMAT"
     set xdata time
-    set format x "%Y-%m-%d %H:%M:%S"
-    set xrange [$X_RANGE]
-   set yrange [$Y_RANGE]
+    set datafile separator ','
+    set format x "%H:%M"
+    set yrange [$Y_RANGE]
+set style line 1 linewidth 3
+    set xrange ["$X_RANGE_START":"$X_RANGE_END"]
     set title "$NAME"
-    plot '-' using 1:3 with lines t"" 
+    $GNUPLOTPARAMS
+    plot '-' using 1:2:2 with lines palette t"" 
 EOF
     )   
+ #   echo $(((RANDOM%200)-100))
+#  !      set xrange ["[2009/05/11 07:30:00]":"[2009/05/12 07:29:00]"]
+
 
 # GP=$(cat << EOF
 #             set terminal png
@@ -243,16 +262,19 @@ EOF
 #             plot '-' with lines t""
 # EOF
 # )   
+  # !  set palette model RGB
+  # !  rgb(r,g,b) = $((RANDOM%65000)) * int(r) + $((RANDOM%65000)) * int(g) + int(b) * $((RANDOM%65000))
 
-    # Pripravit data pro 1 snimek
+  #  ! set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgbcolor rgb  behind
+
+    # prepare data for one frame
     MULTIPLIER=$(echo $frame/40|bc -l)
     SELECTED_DATA=$(echo "$INPUT_DATA")
     START_LINE=$((($LINES/2) - $frame ))
     END_LINE=$((($LINES/2) + $frame ))
     #declare -p START_LINE END_LINE
-#    SELECTED_DATA=$(echo "$INPUT_DATA" | awk -v multiplier="$MULTIPLIER" ' {print $1*multiplier}' )
     SELECTED_DATA=$(echo "$INPUT_DATA" | sed -n "${START_LINE},${END_LINE} p" )
-    # Zavolat gnuplot a vytvorit snimek
+    # call gnuplot and create frame
     if [[ $frame -gt 1 ]]; then
     printf "%s\n" "$GP" "$SELECTED_DATA" | gnuplot
     fi
@@ -276,7 +298,7 @@ else
         done
     fi
     ((DIR_NUM++))
-    OUTPUT_DIR="${NAME}_$DIR_NUM"
+    OUTPUT_DIR="${NAME}_${DIR_NUM}"
 
 fi
 
@@ -290,6 +312,4 @@ mkdir "$OUTPUT_DIR"
 ffmpeg -y -i "$TMP_DIR/%0${DIGITS}d.png" "$anim" || err "Error during ffmpeg execution"
 
 
-
-#done
 exit 0
