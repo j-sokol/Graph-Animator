@@ -7,19 +7,15 @@ PARAMS="$@"
 PARAMS_NO="$#"
 PARAMS_ITER=0
 VERBOSE=0
-
+#set -e
 
 function err {
-    for i in "$@"
-    do
-        echo -e "\e[1;31m$SCRIPT_NAME ERROR: $i\e[0m" >&2    # print in red color
-    done
-
+     echo -e "\e[1;31m$[SCRIPT_NAME] ERROR: $@"
     exit 2
 }
 
 function cleanup {
-  rm -r "$TMP_DIR"
+ # rm -r "$TMP_DIR"
   verbose "Removed '$TMP_DIR' temp directory."
   exit
 }
@@ -27,7 +23,6 @@ function cleanup {
 
 function warn {
     echo -en "\e[1;33mWARNING: \e[0m"     # print in yellow color
-
     for i in "$@"
     do
         echo -en "\e[1;33m$i \e[0m"       # print in yellow color 
@@ -47,8 +42,10 @@ function initialize_values {
     TIMEFORMAT='[%Y/%m/%d %H:%M:%S]'
     Y_MAX='auto'
     Y_MIN='auto'
+    X_MIN='min'
+    X_MAX='max'
     SPEED=1
-    TIME=''
+    unset TIMEFORMAT
     EFFECTPARAMS=''
     GNUPLOTPARAMS=''
     timeregex=''
@@ -57,7 +54,7 @@ function initialize_values {
 
 function verbose {
     if [[ $VERBOSE -ne 0 ]]; then
-        echo -en "\e[1;32m$SCRIPT_NAME: \e[0m"
+        echo -en "\e[1;32m[$SCRIPT_NAME] \e[0m"
         echo "$@" >&2
     fi
 }
@@ -72,14 +69,14 @@ function trim_string {
 function check_values_validity {
 
     timeregex="$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')"
-    echo "-  $timeregex  -"
+    # echo "-  $timeregex  -"
 
     printf '%s\n' "$INPUT_DATA" | while IFS= read -r line
     do
         [[ "$(echo "$line" | cut -d, -f1)" =~ ^$timeregex$ ]] || err "Line \"$(echo "$line" | cut -d, -f1)\" does't match given dateformat. ($TIMEFORMAT) Exiting.."
+        value="$(echo "$line" | cut -d, -f2)"
+        [[ "$value" =~ ^-?[0-9]+$ || "$value" =~ ^-?[0-9]+\.[0-9]+$ || "$value" =~ ^\+?[0-9]+$ || "$value" =~ ^\+?[0-9]+\.[0-9]+$ ]] || err "Value \"$(echo "$line" | cut -d, -f2)\" is not a number. Exiting.."
     done
-    verbose "Dateformat in input files is valid."
-
 }
 
 function load_config {
@@ -95,12 +92,12 @@ function load_config {
             if [[ ! $lhs =~ ^\ *# && -n $lhs ]]
                 then
             rhs="${rhs%%\#*}"    # Del in line right comments
-            echo "--" $lhs " = " $rhs
+            # echo "--" $lhs " = " $rhs
             lhs=`echo $lhs | tr '[:lower:]' '[:upper:]'`
             rhs=`trim_string $rhs`
             # you can test for variables to accept or other conditions here
             if [[ $lhs == *"GNUPLOTPARAMS"* ]]; then
-                echo kek $rhs
+                # echo kek $rhs
                 GNUPLOTPARAMS+="set ""$rhs"$'\n'
                 continue
             fi
@@ -135,10 +132,11 @@ function load_switches {
             [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Speed param bad format."
             (( PARAMS_ITER+=2 )) ;;
         T)  TIME="$OPTARG"
+            echo time $TIME
             [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Time param bad format."
             (( PARAMS_ITER+=2 )) ;;
         F)  FPS="$OPTARG" 
-            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] && {    # non-numeric value, should be int/float, must not be zero
+            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "FPS param bad fmt"
             (( PARAMS_ITER+=2 )) ;;
 
         n)  NAME="$OPTARG"
@@ -168,7 +166,7 @@ function load_switches {
             fi
             (( PARAMS_ITER+=2 )) ;;
 
-        t)  TIMEFORMAT='$OPTARG'
+        t)  TIMEFORMAT="$OPTARG"
             #[ -z "$OPTARG" ] && error "the value of the switch -t was not provided"
             [[ "$OPTARG" =~ %[dHjklmMSuUVwWyY] ]] || warn "Please check timeformat again."
             timeregex="$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')"
@@ -190,12 +188,16 @@ done
 
 }
 
+
 function load_data {
-    IFS=' ' read -r -a INPUT_FILES <<< $PARAMS
+    # echo files in params locations: `seq $PARAMS_ITER $(($PARAMS_NO))`
+    # [[ $(seq $PARAMS_ITER $(($PARAMS_NO - 1))) ]] || err "No files given in params."
+    [ -n "$@" ] ||  err "No files given in params."
+ #   IFS=' ' read -r -a INPUT_FILES <<< $@
     INPUT_DATA=""
-    for i in `seq $PARAMS_ITER $(($PARAMS_NO - 1))`
+    for INPUT_FILES in "$@"
+#    for i in `seq $PARAMS_ITER $(($PARAMS_NO - 1))`
     do
-        echo loadig file/page: ${INPUT_FILES[i]}
         if [[ ${INPUT_FILES[i]} =~ ^http://.*$|^https://.*$ ]]; then
             verbose "Downloading file: ${INPUT_FILES[i]}"
             wget "${INPUT_FILES[i]}" -O $TMP/${SCRIPT_NAME}_$i >/dev/null 2>&1
@@ -217,7 +219,80 @@ function load_data {
 
     done
 
+    VAR_INPUT_DATA=$(echo "$INPUT_DATA"| sed 's/\(.*\) /\1,/' ) # change ws delimiter to ','
+    INPUT_DATA="$VAR_INPUT_DATA"
+
+
 }
+
+function set_y_range {
+    
+    if [[ "$Y_MAX" == "auto" ]]; then
+        Y_RANGE_END=''
+    elif [[ "$Y_MAX" == "max" ]]; then
+        Y_RANGE_END=$(echo "$INPUT_DATA"| awk -F "," '
+        NR==1  { max=$2 }
+        $2>max { max=$2 }
+        END      { print max; }' ) 
+    else 
+        Y_RANGE_END=$Y_MAX
+    fi
+
+    if [[ "$Y_MIN" == "auto" ]]; then
+        Y_RANGE_START=''
+    elif [[ "$Y_MIN" == "min" ]]; then
+        Y_RANGE_START=$(echo "$INPUT_DATA"| awk -F "," '
+        NR==1  { min=$2 }
+        $2<min { min=$2 }
+        END      { print min; }' ) 
+    else 
+        Y_RANGE_START=$Y_MIN
+    fi
+
+    verbose "Y range is: $Y_RANGE_START -> $Y_RANGE_END"
+}
+
+function set_x_range {
+    if [[ "$X_MAX" == "auto" ]]; then
+        X_RANGE_END=''
+    elif [[ "$X_MAX" == "max" ]]; then
+        X_RANGE_END=`echo "$INPUT_DATA"|tail -n 1 |sed 's;,.*$;;'`
+    else 
+        X_RANGE_END=$X_MAX
+    fi
+
+    if [[ "$X_MIN" == "auto" ]]; then
+        X_RANGE_START=''
+    elif [[ "$X_MIN" == "min" ]]; then
+        X_RANGE_START=`echo "$INPUT_DATA"|head -n 1 |sed 's;,.*$;;'`
+    else 
+        X_RANGE_START=$X_MIN
+    fi
+
+    verbose "X range is: $X_RANGE_START -> $X_RANGE_END"
+}
+
+function calculate_speed {
+    if [ "$FPS" != "" ] && [ "$SPEED" != "" ] && [ "$TIME" != "" ]; then
+        warn "FPS, speed & time are all set. Will use speed & time only."
+    fi
+    if [ "$SPEED" != "" ] && [ "$TIME" != "" ]; then
+        verbose Lines is: "$LINES" SPEED is $SPEED time is $TIME
+        frames=$((($LINES/2)/$SPEED))
+        # let frames="($LINES/2)/$SPEED"
+        verbose frames is $frames
+        $FPS=$(($frames /$TIME))
+        verbose fps is $FPS
+        echo FPS: $FPS
+        warn kurva
+    elif [ "$FPS" != "" ] && [ "$SPEED" != "" ]; then
+        echo FPS is $FPS;
+    elif [  "$FPS" != "" ] && [ "$TIME" != "" ]; then
+        SPEED=$((($LINES/$FPS)/$TIME))
+        verbose speed set to $SPEED
+    fi
+}
+
 # -------- MAIN ----------------
 if [ $# -eq 0 ]; then
     warn "${SCRIPT_NAME}: No arguments provided."
@@ -239,29 +314,30 @@ TMP_DIR=$(mktemp -d) || err "Not able to create temp directory. Aborting."
 
 
 # initialize default consts & settings ...
-echo "No of params:" $#
-echo "'@': $@"
-
 initialize_values
 
+
+# load configuration from params.
 load_switches "$@"
 
 
-echo "============"
-echo "OPS: " $opt
-echo "============"
+ echo "============"
+ echo "OPS: " $opt
+ echo "OPS2: " $@
+ shift `expr $OPTIND - 1`
+ echo "OPS3: " $@
+
+ echo "============"
 
 # load config file
 
 
-echo "$GNUPLOTPARAMS" |less
-
 #( set -o posix ; set ) | less
 
-echo "---" $NAME
-echo PARAMS_ITER $PARAMS_ITER
+# echo "---" $NAME
+# echo PARAMS_ITER $PARAMS_ITER
 
-echo PARAMS $PARAMS
+# echo PARAMS $PARAMS
 
 
 # if some values are still not set - set them manually
@@ -272,49 +348,48 @@ echo PARAMS $PARAMS
 
 
 # load data from files
-load_data
+load_data "$@"
 
-VAR_INPUT_DATA=$(echo "$INPUT_DATA"| sed 's/\(.*\) /\1,/' )
-INPUT_DATA="$VAR_INPUT_DATA"
 
 
 
 # check if loaded values are ok
 check_values_validity
+if [ $? != 0 ]; then
+    exit 2;
+fi
+verbose "Dateformat in input files is valid."
 
-exit 1;
+
+#exit 1;
 
 
-echo "$INPUT_DATA"|less
+# echo "$INPUT_DATA"|less
 
 LINES=`echo "$INPUT_DATA" | wc -l`
 DIGITS=${#LINES}
 
-echo LINES $LINES DIGITS $DIGITS 
-#X_RANGE="1:$LINES"
-Y_RANGE=$(echo "$INPUT_DATA"| awk -F "," '
-    NR==1  { min=$2; max=$2 }
-    $2>max { max=$2 }
-    $2<min { min=$2 }
-    END      { if ( min > 0 ) print 0 ":" int(max)+1
-else  print int(min)-1 ":" int(max)+1
-}
-' |sed 's; ;;') 
-echo $Y_RANGE |less
+#echo LINES $LINES DIGITS $DIGITS 
 
-#Y_RANGE='-1:1'
-X_RANGE_START=`echo "$INPUT_DATA"|head -n 1 |sed 's;,.*$;;'`
-X_RANGE_END=`echo "$INPUT_DATA"|tail -n 1 |sed 's;,.*$;;'`
-echo $Y_RANGE |less
+set_y_range
+set_x_range
+calculate_speed
+
+verbose "Creating animation."
+#X_RANGE="1:$LINES"
+#echo $Y_RANGE |less
+
+
+#echo $Y_RANGE |less
 first=1
 FRAMES=40
 # create set of frames
 #for (( frame=1; frame<=40; frame++ ))
-for ((frame=1;frame<=LINES/2-5;frame++))
+for ((frame=1;frame<=LINES/2-5;frame+= $SPEED))
 do
-    (( p=100*frame/LINES ))
+    (( p=100*frame/(LINES/2-5) ))
 
-    (( p%10==0 && first )) && { verbose "$p % done"; first=0; }
+    (( p%10==0 && first )) && { verbose "$p% done"; first=0; }
     (( p%10 )) && first=1
 
     # gnuplot script
@@ -325,7 +400,7 @@ do
         set xdata time
         set datafile separator ','
         set format x "%H:%M"
-        set yrange [$Y_RANGE]
+        set yrange [$Y_RANGE_START:$Y_RANGE_END]
         set style line 1 linewidth 3
         set xrange ["$X_RANGE_START":"$X_RANGE_END"]
         set title "$NAME"
@@ -333,22 +408,6 @@ do
         plot '-' using 1:2:2 with lines palette t"" 
 EOF
         )   
- #   echo $(((RANDOM%200)-100))
-#  !      set xrange ["[2009/05/11 07:30:00]":"[2009/05/12 07:29:00]"]
-
-
-# GP=$(cat << EOF
-#             set terminal png
-#             set output "$TMP_DIR/$(printf "%0${DIGITS}d.png" "$frame")"
-#             set xrange [$X_RANGE]
-#             set yrange [$Y_RANGE]
-#             plot '-' with lines t""
-# EOF
-# )   
-  # !  set palette model RGB
-  # !  rgb(r,g,b) = $((RANDOM%65000)) * int(r) + $((RANDOM%65000)) * int(g) + int(b) * $((RANDOM%65000))
-
-  #  ! set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgbcolor rgb  behind
 
     # prepare data for one frame
     MULTIPLIER=$(echo $frame/40|bc -l)
@@ -360,6 +419,12 @@ EOF
     # call gnuplot and create frame
     if [[ $frame -gt 1 ]]; then
         printf "%s\n" "$GP" "$SELECTED_DATA" | gnuplot
+        if [ $? != 0 ]; then
+            err "Problem w/ gnuplot generating images."
+            exit 2;
+        fi
+
+
     fi
     #frame=$(($frame+$SPEED))
    # echo frame  $frame
@@ -386,13 +451,13 @@ else
 fi
 
 
-declare -p OUTPUT_DIR
 
 #anim="anim.mp4"
 anim="${OUTPUT_DIR}/anim.mp4"
 mkdir "$OUTPUT_DIR"
 
+
 ffmpeg -y -r "$FPS" -i "$TMP_DIR/%0${DIGITS}d.png" "$anim" &>/dev/null || err "Error during ffmpeg execution"
 
-
+verbose "Generated animation is in folder \"$anim\""
 exit 0
