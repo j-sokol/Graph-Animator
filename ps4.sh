@@ -65,12 +65,16 @@ function trim_string {
 
 function check_values_validity {
     timeregex="$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')"
+    # echo "$INPUT_DATA" |less
 
     printf '%s\n' "$INPUT_DATA" | while IFS= read -r line
     do
+        [ -z "$line" ] && continue;
+        # echo "$line" 
         [[ "$(echo "$line" | cut -d, -f1)" =~ ^$timeregex$ ]] || err "Line \"$(echo "$line" | cut -d, -f1)\" does't match given dateformat. ($TIMEFORMAT) Exiting.."
         value="$(echo "$line" | cut -d, -f2)"
-        [[ "$value" =~ ^-?[0-9]+$ || "$value" =~ ^-?[0-9]+\.[0-9]+$ || "$value" =~ ^\+?[0-9]+$ || "$value" =~ ^\+?[0-9]+\.[0-9]+$ ]] || err "Value \"$(echo "$line" | cut -d, -f2)\" is not a number. Exiting.."
+        # echo value is: $value
+        [[ "$value" =~ ^-?[0-9]+$ || "$value" =~ ^-?[0-9]+\.[0-9]+$ || "$value" =~ ^\+?[0-9]+$ || "$value" =~ ^\+?[0-9]+\.[0-9]+$ ]] || err "Value $value is not a number. Exiting.."
     done
 }
 
@@ -78,8 +82,8 @@ function load_config {
 
     if [ ! -z "$CONFIG_FILE" ]; then
 
-        [ -f $CONFIG_FILE ] || err "$CONFIG_FILE is not file. Aborting."
-        [ -r $CONFIG_FILE ] || err "$CONFIG_FILE is not file. Aborting."
+        [ -f $CONFIG_FILE ] || err "Configuration file $CONFIG_FILE is not file. Aborting."
+        [ -r $CONFIG_FILE ] || err "Configuration file $CONFIG_FILE is not file. Aborting."
         shopt -s extglob
 
         while IFS=' ' read lhs rhs
@@ -122,13 +126,13 @@ function load_config {
                     verbose "value of the YMin directive is: $rhs"
                 ;;
                 SPEED )
-                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter speed has a bad format. Has to be int value."
+                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter speed is in bad format. Has to be int/float value."
                 ;;
                 TIME )
-                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Time param bad format."
+                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter time is in bad format. Has to be int/float value."
                 ;;
                 FPS )
-                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "FPS param bad fmt"
+                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter FPS is in bad format ($FPS). Has to be int/float value."
                 ;;
                 * )
                     continue
@@ -164,22 +168,24 @@ EOF
 
 function load_switches {
 
-    while getopts ":f:F:vVhS:t:T:n:e:Y:y:X:x:g:v" opt; do
+    while getopts ":f:F:vVhS:t:T:n:e:Y:y:X:x:g:vl:" opt; do
       case $opt in
+        l)  LEGEND=$(echo "$OPTARG" |tr -cd '[[:alnum:]] ._-')
+            ;;
         f)  
             CONFIG_FILE="$OPTARG"
              ;;
         S)  SPEED="$OPTARG" 
-            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Speed param bad format."
+            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter speed is in bad format. Has to be int/float value."
             ;;
         T)  TIME="$OPTARG"
             echo time $TIME
-            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Time param bad format."
+            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter time is in bad format. Has to be int/float value."
             ;;
         F)  FPS="$OPTARG" 
-            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "FPS param bad fmt"
+            [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Parameter FPS is in bad format. Has to be int/float value."
             ;;
-        n)  NAME="$OPTARG" ;;
+        n)  NAME=$(echo "$OPTARG" |tr -cd '[[:alnum:]] ._-') ;;
             
         e)  EFFECTPARAMS="$OPTARG" ;;
         v)  VERBOSE=1 
@@ -226,19 +232,23 @@ done
 
 function load_data {
 #    echo params given to load_data: "$@"
-
+    i=0
     [[ -z "$@" ]] &&  err "No files given in params."
+    verbose Files passed to load are: $@
     INPUT_DATA=""
     for INPUT_FILES in "$@"
     do 
         if [[ ${INPUT_FILES} =~ ^http://.*$|^https://.*$ ]]; then
             verbose "Downloading file: ${INPUT_FILES}"
-            wget "${INPUT_FILES}" -O $TMP/${SCRIPT_NAME}_$i >/dev/null 2>&1
+            wgeterr=$(wget "${INPUT_FILES}" -O $TMP/${SCRIPT_NAME}_$i 2>&1)
             if [[ "$?" -eq 0 ]]; then
                 verbose "File ${INPUT_FILES} downloaded."
             else
-                err "File ${INPUT_FILES} failed to download. Exiting."
+                err "File ${INPUT_FILES} failed to download. Wget output: `trim_string $wgeterr` Exiting."
             fi
+
+            [ -r $TMP/${SCRIPT_NAME}_$i ] || err "${INPUT_FILES} cannot be read. Aborting." 
+            [ -s $TMP/${SCRIPT_NAME}_$i ] || err "${INPUT_FILES} is empty. Aborting." 
 
             VAR_INPUT_DATA=$( sed 's/\(.*\) /\1,/' $TMP/${SCRIPT_NAME}_$i) # change ws delimiter to ','
 
@@ -254,9 +264,11 @@ function load_data {
             fi
 
             rm $TMP/${SCRIPT_NAME}_$i
+            (( i++ ))
         else 
             [ -f ${INPUT_FILES} ] || err "${INPUT_FILES} is not file. Aborting." 
             [ -r ${INPUT_FILES} ] || err "${INPUT_FILES} cannot be read. Aborting." 
+            [ -s ${INPUT_FILES} ] || err "${INPUT_FILES} is empty. Aborting." 
             verbose "Reading input file: ${INPUT_FILES}"
 
             VAR_INPUT_DATA=$( sed 's/\(.*\) /\1,/' ${INPUT_FILES}) # change ws delimiter to ','
@@ -466,7 +478,7 @@ while [[ "$(echo "$iter<$frames" | bc -l)" == "1" ]]; do
         set yrange [$Y_RANGE_START:$Y_RANGE_END]
         set style line 1 linewidth 3
         set xrange ["$X_RANGE_START":"$X_RANGE_END"]
-        set title "$NAME"
+        set title "$LEGEND"
         $GNUPLOTPARAMS
         plot '-' using 1:2:2 with lines palette t"" 
 EOF
