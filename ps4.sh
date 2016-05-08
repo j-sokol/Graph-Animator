@@ -10,7 +10,7 @@ VERBOSE=0
 #set -e
 
 function err {
-     echo -e "\e[1;31m$[SCRIPT_NAME] ERROR: $@"
+    echo -e "\e[1;31m[$SCRIPT_NAME] ERROR: $@"
     exit 2
 }
 
@@ -40,12 +40,11 @@ EOF
 }
 function initialize_values {
     TIMEFORMAT='[%Y/%m/%d %H:%M:%S]'
-    Y_MAX='auto'
-    Y_MIN='auto'
-    X_MIN='min'
-    X_MAX='max'
+    YMAX='auto'
+    YMIN='auto'
+    XMIN='min'
+    XMAX='max'
     SPEED=1
-    unset TIMEFORMAT
     EFFECTPARAMS=''
     GNUPLOTPARAMS=''
     timeregex=''
@@ -69,7 +68,6 @@ function trim_string {
 function check_values_validity {
 
     timeregex="$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')"
-    # echo "-  $timeregex  -"
 
     printf '%s\n' "$INPUT_DATA" | while IFS= read -r line
     do
@@ -92,20 +90,66 @@ function load_config {
             if [[ ! $lhs =~ ^\ *# && -n $lhs ]]
                 then
             rhs="${rhs%%\#*}"    # Del in line right comments
-            # echo "--" $lhs " = " $rhs
             lhs=`echo $lhs | tr '[:lower:]' '[:upper:]'`
+
             rhs=`trim_string $rhs`
-            # you can test for variables to accept or other conditions here
-            if [[ $lhs == *"GNUPLOTPARAMS"* ]]; then
-                # echo kek $rhs
-                GNUPLOTPARAMS+="set ""$rhs"$'\n'
-                continue
-            fi
-            [ -z "${!lhs}" ] && declare "$lhs=$rhs"
+          #  lhs=`trim_string $lhs`
+
+            case $lhs in
+                GNUPLOTPARAMS )                 
+                    GNUPLOTPARAMS+="set ""$rhs"$'\n'
+                    continue
+                    ;;
+                TIMEFORMAT )
+                    [[ "$rhs" =~ %[dHjklmMSuUVwWyY] ]] || warn "Please check format of directive TimeFormat again."
+                    verbose "value of the TimeFormat directive is: $rhs"
+                    ;;
+                XMIN )
+                    if ! [[ "$rhs" == "auto" || "$rhs" == "min" ]]; then
+                        [[ "$rhs" =~ ^$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')$ ]] || err "Provided timestamp format ($TIMEFORMAT) & XMIN ($rhs) don't match."
+                    fi
+                    verbose "value of the XMIN directive is: $rhs"
+                ;;
+                XMAX )
+                    if ! [[ "$rhs" == "auto" || "$rhs" == "max" ]]; then
+                        [[ "$rhs" =~ ^$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')$ ]] || err "Provided timestamp ($TIMEFORMAT) format & XMAX ($rhs) don't match."
+                    fi
+                    verbose "value of the XMax directive is: $rhs"
+                ;;
+                YMAX )
+                    [[ "$rhs" =~ ^-?[0-9]+$ || "$rhs" =~ ^-?[0-9]+\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]+$ || "$rhs" == "auto" || "$rhs" == "max" ]] || err "Ymax format mismatch"
+                    verbose "value of the YMax directive is: $rhs"
+                ;;
+                YMIN )
+                    [[ "$rhs" =~ ^-?[0-9]+$ || "$rhs" =~ ^-?[0-9]+\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]+$ || "$rhs" == "auto" || "$rhs" == "min" ]] || err "Ymax format mismatch"
+                    verbose "value of the YMin directive is: $rhs"
+                ;;
+                SPEED )
+                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Speed param bad format."
+                ;;
+                TIME )
+                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Time param bad format."
+                ;;
+                FPS )
+                    [[ "$rhs" =~ ^\+?[1-9]([0-9])*$ || "$rhs" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$rhs" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$rhs" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "FPS param bad fmt"
+                ;;
+                * )
+                    continue
+                ;;
+
+            esac
+
+            echo "${lhs}=${rhs}"
+           # declare "$lhs=$rhs"
+            eval "$lhs=$rhs"
+
+          #  [ -z "${!lhs}" ] && declare "$lhs=$rhs"
         fi
     done < "$CONFIG_FILE"
 
 fi
+#( set -o posix ; set ) | less
+
 }
 
 
@@ -125,53 +169,46 @@ function load_switches {
 
     while getopts ":f:vhS:t:T:n:e:Y:y:X:x:g:v" opt; do
       case $opt in
-        f)  CONFIG_FILE="$OPTARG"
-            load_config
-            (( PARAMS_ITER+=2 )) ;;
+        f)  
+            CONFIG_FILE="$OPTARG"
+             ;;
         S)  SPEED="$OPTARG" 
             [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Speed param bad format."
-            (( PARAMS_ITER+=2 )) ;;
+            ;;
         T)  TIME="$OPTARG"
             echo time $TIME
             [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "Time param bad format."
-            (( PARAMS_ITER+=2 )) ;;
+            ;;
         F)  FPS="$OPTARG" 
             [[ "$OPTARG" =~ ^\+?[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[1-9]([0-9])*\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[1-9]([0-9])*$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]*[1-9]$ ]] || err "FPS param bad fmt"
-            (( PARAMS_ITER+=2 )) ;;
-
-        n)  NAME="$OPTARG"
+            ;;
+        n)  NAME="$OPTARG" ;;
             
-            (( PARAMS_ITER+=2 )) ;;
-        e)  EFFECTPARAMS="$OPTARG"
-            (( PARAMS_ITER+=2 )) ;;
-        v)  VERBOSE=1
-            (( PARAMS_ITER++ ))  ;;
-        g)  GNUPLOTPARAMS+="set ""$OPTARG"$'\n'
-            (( PARAMS_ITER+=2 )) ;;
-        y)  Y_MIN="$OPTARG"
+        e)  EFFECTPARAMS="$OPTARG" ;;
+        v)  VERBOSE=1 ;;
+        g)  GNUPLOTPARAMS+="set ""$OPTARG"$'\n' ;;
+        y)  YMIN="$OPTARG"
             [[ "$OPTARG" =~ ^-?[0-9]+$ || "$OPTARG" =~ ^-?[0-9]+\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]+$ || "$OPTARG" == "auto" || "$OPTARG" == "min" ]] || err "Ymin format mismatch"
-
-            (( PARAMS_ITER+=2 )) ;;
-        Y)  Y_MAX="$OPTARG"
+            ;;
+        Y)  YMAX="$OPTARG"
             [[ "$OPTARG" =~ ^-?[0-9]+$ || "$OPTARG" =~ ^-?[0-9]+\.[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+$ || "$OPTARG" =~ ^\+?[0-9]+\.[0-9]+$ || "$OPTARG" == "auto" || "$OPTARG" == "max" ]] || err "Ymax format mismatch"
-            (( PARAMS_ITER+=2 )) ;;
-        x)  X_MIN="$OPTARG"
+            ;;
+        x)  XMIN="$OPTARG"
             if ! [[ "$OPTARG" == "auto" || "$OPTARG" == "min" ]]; then
                 [[ "$OPTARG" =~ ^$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')$ ]] || err "Provided timestamp format & XMAX don't match."
             fi
-            (( PARAMS_ITER+=2 )) ;;
-        X)  X_MAX="$OPTARG"
+            ;;
+        X)  XMAX="$OPTARG"
             if ! [[ "$OPTARG" == "auto" || "$OPTARG" == "max" ]]; then
                 [[ "$OPTARG" =~ ^$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')$ ]] || err "Provided timestamp format & XMAX don't match."
             fi
-            (( PARAMS_ITER+=2 )) ;;
-
+            ;;
         t)  TIMEFORMAT="$OPTARG"
             #[ -z "$OPTARG" ] && error "the value of the switch -t was not provided"
             [[ "$OPTARG" =~ %[dHjklmMSuUVwWyY] ]] || warn "Please check timeformat again."
             timeregex="$(echo "$TIMEFORMAT" | sed 's/\\/\\\\/g; s/\./\\./g; s/\[/\\[/g; s/\]/\\]/g; s/%d/(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\])/g; s/%H/(\[0-1\]\[0-9\]|2\[0-3\])/g; s/%I/(0\[1-9\]|1\[0-2\])/g; s/%j/(00\[1-9\]|0\[0-9\]\[0-9\]|\[1-2\]\[0-9\]\[0-9\]|3\[0-5\]\[0-9\]|36\[0-6\])/g; s/%k/(\[0-9\]|1\[0-9\]|2\[0-3\])/g; s/%l/(\[0-9\]|1\[0-2\])/g; s/%m/(0\[1-9\]|1\[0-2\])/g; s/%M/(\[0-5\]\[0-9\]|60)/g; s/%S/(\[0-5\]\[0-9\]|60)/g; s/%u/\[1-7\]/g; s/%U/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%V/(0\[1-9\]|\[1-4\]\[0-9\]|5\[0-3\])/g; s/%w/\[0-6\]/g; s/%W/(\[0-4\]\[0-9\]|5\[0-3\])/g; s/%y/\[0-9\]\[0-9\]/g; s/%Y/(\[0-1\]\[0-9\]\[0-9\]\[0-9\]|200\[0-9\]|201\[0-3\])/g;')"
-            (( PARAMS_ITER+=2 )) ;;
             # + $(grep -o " " <<< "$OPTARG" | wc -l)
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             exit 1 ;;
@@ -192,84 +229,115 @@ done
 function load_data {
     # echo files in params locations: `seq $PARAMS_ITER $(($PARAMS_NO))`
     # [[ $(seq $PARAMS_ITER $(($PARAMS_NO - 1))) ]] || err "No files given in params."
-    [ -n "$@" ] ||  err "No files given in params."
+    # echo params given to load_data: "$@"
+
+    [[ -z "$@" ]] &&  err "No files given in params."
  #   IFS=' ' read -r -a INPUT_FILES <<< $@
     INPUT_DATA=""
     for INPUT_FILES in "$@"
 #    for i in `seq $PARAMS_ITER $(($PARAMS_NO - 1))`
-    do
-        if [[ ${INPUT_FILES[i]} =~ ^http://.*$|^https://.*$ ]]; then
-            verbose "Downloading file: ${INPUT_FILES[i]}"
-            wget "${INPUT_FILES[i]}" -O $TMP/${SCRIPT_NAME}_$i >/dev/null 2>&1
+    do 
+        if [[ ${INPUT_FILES} =~ ^http://.*$|^https://.*$ ]]; then
+            verbose "Downloading file: ${INPUT_FILES}"
+            wget "${INPUT_FILES}" -O $TMP/${SCRIPT_NAME}_$i >/dev/null 2>&1
             if [[ "$?" -eq 0 ]]; then
-                verbose "File ${INPUT_FILES[i]} downloaded."
+                verbose "File ${INPUT_FILES} downloaded."
             else
-                err "File ${INPUT_FILES[i]} failed to download. Exiting."
+                err "File ${INPUT_FILES} failed to download. Exiting."
             fi
-            INPUT_DATA+=`<$TMP/${SCRIPT_NAME}_$i`
+
+            VAR_INPUT_DATA=$( sed 's/\(.*\) /\1,/' $TMP/${SCRIPT_NAME}_$i) # change ws delimiter to ','
+
+            # INPUT_DATA+=`<$TMP/${SCRIPT_NAME}_$i`
+            # INPUT_DATA+=$'\n'
+
             rm $TMP/${SCRIPT_NAME}_$i
         else 
-            [ -f ${INPUT_FILES[i]} ] || err "${INPUT_FILES[i]} is not file. Aborting." 
-            [ -r ${INPUT_FILES[i]} ] || err "${INPUT_FILES[i]} cannot be read. Aborting." 
-            verbose "Reading file: ${INPUT_FILES[i]}"
+            [ -f ${INPUT_FILES} ] || err "${INPUT_FILES} is not file. Aborting." 
+            [ -r ${INPUT_FILES} ] || err "${INPUT_FILES} cannot be read. Aborting." 
+            verbose "Reading input file: ${INPUT_FILES}"
 
-            INPUT_DATA+=`<${INPUT_FILES[i]}`  
+            VAR_INPUT_DATA=$( sed 's/\(.*\) /\1,/' ${INPUT_FILES}) # change ws delimiter to ','
+
+
+
+            old_date=$(date -d  "`echo ${INPUT_DATA%%$'\n'*}| cut -d"," -f1 |sed 's;[^([:alnum:]|[:space:]|:)/]\+;;g'`" +%s)
+            new_date=$(date -d  "`echo ${VAR_INPUT_DATA%%$'\n'*}| cut -d"," -f1| sed 's;[^([:alnum:]|[:space:]|:)/]\+;;g'`" +%s)
+
+            echo $old_date new_date: $new_date
+
+            if [ "$new_date" -gt "$old_date" ]; then
+                echo new date is bigger than older one.
+                INPUT_DATA+=$'\n'
+                INPUT_DATA="${INPUT_DATA}${VAR_INPUT_DATA}"
+            else
+                echo new date is smaller than older one.
+                [ -n "$INPUT_DATA" ] && VAR_INPUT_DATA+=$'\n'
+                INPUT_DATA="${VAR_INPUT_DATA}${INPUT_DATA}"
+            fi
+
+            # INPUT_DATA+=`<"${INPUT_FILES}"`  
+            # INPUT_DATA+=$'\n'
 
         fi
 
     done
 
-    VAR_INPUT_DATA=$(echo "$INPUT_DATA"| sed 's/\(.*\) /\1,/' ) # change ws delimiter to ','
-    INPUT_DATA="$VAR_INPUT_DATA"
+    # VAR_INPUT_DATA=$(echo "$INPUT_DATA"| sed 's/\(.*\) /\1,/' ) # change ws delimiter to ','
+    # INPUT_DATA="$VAR_INPUT_DATA"
 
 
 }
 
+function check_variables_set {
+    [ -z "$NAME" ] && err "Variable NAME wasn't set. Exiting..."
+}
+
 function set_y_range {
     
-    if [[ "$Y_MAX" == "auto" ]]; then
+    if [[ "$YMAX" == "auto" ]]; then
         Y_RANGE_END=''
-    elif [[ "$Y_MAX" == "max" ]]; then
+    elif [[ "$YMAX" == "max" ]]; then
         Y_RANGE_END=$(echo "$INPUT_DATA"| awk -F "," '
         NR==1  { max=$2 }
         $2>max { max=$2 }
         END      { print max; }' ) 
     else 
-        Y_RANGE_END=$Y_MAX
+        Y_RANGE_END=$YMAX
     fi
 
-    if [[ "$Y_MIN" == "auto" ]]; then
+    if [[ "$YMIN" == "auto" ]]; then
         Y_RANGE_START=''
-    elif [[ "$Y_MIN" == "min" ]]; then
+    elif [[ "$YMIN" == "min" ]]; then
         Y_RANGE_START=$(echo "$INPUT_DATA"| awk -F "," '
         NR==1  { min=$2 }
         $2<min { min=$2 }
         END      { print min; }' ) 
     else 
-        Y_RANGE_START=$Y_MIN
+        Y_RANGE_START=$YMIN
     fi
 
-    verbose "Y range is: $Y_RANGE_START -> $Y_RANGE_END"
+    verbose "Range on Y axis configured to: $Y_RANGE_START : $Y_RANGE_END"
 }
 
 function set_x_range {
-    if [[ "$X_MAX" == "auto" ]]; then
+    if [[ "$XMAX" == "auto" ]]; then
         X_RANGE_END=''
-    elif [[ "$X_MAX" == "max" ]]; then
+    elif [[ "$XMAX" == "max" ]]; then
         X_RANGE_END=`echo "$INPUT_DATA"|tail -n 1 |sed 's;,.*$;;'`
     else 
-        X_RANGE_END=$X_MAX
+        X_RANGE_END=$XMAX
     fi
 
-    if [[ "$X_MIN" == "auto" ]]; then
+    if [[ "$XMIN" == "auto" ]]; then
         X_RANGE_START=''
-    elif [[ "$X_MIN" == "min" ]]; then
+    elif [[ "$XMIN" == "min" ]]; then
         X_RANGE_START=`echo "$INPUT_DATA"|head -n 1 |sed 's;,.*$;;'`
     else 
-        X_RANGE_START=$X_MIN
+        X_RANGE_START=$XMIN
     fi
 
-    verbose "X range is: $X_RANGE_START -> $X_RANGE_END"
+    verbose "Range on X axis configured to: $X_RANGE_START : $X_RANGE_END"
 }
 
 function calculate_speed {
@@ -317,17 +385,32 @@ TMP_DIR=$(mktemp -d) || err "Not able to create temp directory. Aborting."
 initialize_values
 
 
+#  check if config file was passed in params
+IFS=' ' read -r -a parameters <<< "$@"
+for i in "${!parameters[@]}" ;do
+    if [[ ${parameters[$i]} =~ -f ]]; then
+        CONFIG_FILE=${parameters[$i+1]}
+        # if so, load config
+        load_config
+    fi
+done
+
+
+
+
 # load configuration from params.
 load_switches "$@"
 
 
- echo "============"
- echo "OPS: " $opt
- echo "OPS2: " $@
- shift `expr $OPTIND - 1`
- echo "OPS3: " $@
+check_variables_set
 
- echo "============"
+  echo "============"
+  echo "OPS: " $opt
+  echo "OPS2: " $@
+ shift `expr $OPTIND - 1`
+  echo "OPS3: $@"
+
+  echo "============"
 
 # load config file
 
@@ -351,17 +434,14 @@ load_switches "$@"
 load_data "$@"
 
 
-
+verbose "timeformat is: $TIMEFORMAT"
 
 # check if loaded values are ok
 check_values_validity
-if [ $? != 0 ]; then
-    exit 2;
-fi
+
+[ $? == 0 ] || exit 2;
+
 verbose "Dateformat in input files is valid."
-
-
-#exit 1;
 
 
 # echo "$INPUT_DATA"|less
@@ -376,11 +456,7 @@ set_x_range
 calculate_speed
 
 verbose "Creating animation."
-#X_RANGE="1:$LINES"
-#echo $Y_RANGE |less
 
-
-#echo $Y_RANGE |less
 first=1
 FRAMES=40
 # create set of frames
@@ -414,13 +490,12 @@ EOF
     SELECTED_DATA=$(echo "$INPUT_DATA")
     START_LINE=$((($LINES/2) - $frame ))
     END_LINE=$((($LINES/2) + $frame ))
-    #declare -p START_LINE END_LINE
     SELECTED_DATA=$(echo "$INPUT_DATA" | sed -n "${START_LINE},${END_LINE} p" )
     # call gnuplot and create frame
     if [[ $frame -gt 1 ]]; then
-        printf "%s\n" "$GP" "$SELECTED_DATA" | gnuplot
+        ploterr=$(printf "%s\n" "$GP" "$SELECTED_DATA" | gnuplot 2>&1)
         if [ $? != 0 ]; then
-            err "Problem w/ gnuplot generating images."
+            err "Problem with gnuplot generating images. Gnuplot output: `trim_string $ploterr`"
             exit 2;
         fi
 
@@ -450,9 +525,6 @@ else
 
 fi
 
-
-
-#anim="anim.mp4"
 anim="${OUTPUT_DIR}/anim.mp4"
 mkdir "$OUTPUT_DIR"
 
