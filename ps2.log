@@ -1,0 +1,1160 @@
+[1;32m[ps2_tester] [0mPhase 1 - incorrect inputs
+[1;32m[ps2_tester] [0mTest 1 - no params
+[0] ./ps2.sh
+    ps2.sh [-v] [-V] [-h] [-l LEGEND] [-f CONFIGFILE] [-T TIME] [-F FPS] [-e EFFECTPARAMS] [-g GNUPLOTPARAMS]
+    [-y YMIN] [-Y YMAX] [-x XMIN] [-X XMAX] [-t TIMEFORMAT] -n name FILE...
+[1;31m[ps2.sh] ERROR: No arguments provided. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 2 - version
+[1] ./ps2.sh -V
+1
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest 3 - help menu
+[2] ./ps2.sh -h
+    ps2.sh, version 1
+
+    Bash script that creates a .mp4 animation from source (sources) of data - URLs or files. 
+    Input data in files are in format "Date [ws] float value", eg. "[2009/05/11 07:33:00] 5".
+    Script depends on gnuplot, wget and ffmpeg.        
+    Uses gnuplot for creating each frame in animation and then ffmpeg for combining frames into animation.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest 4 - no name set
+[3] ./ps2.sh data/sin_day_int_part.data
+[1;31m[ps2.sh] ERROR: Directive NAME is not set. Exiting... [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 5 - error in timeformat
+[4] ./ps2.sh -t %Y/%m/k%d -n name data/sin_day_int_part.data
+[1;31m[ps2.sh] ERROR: Line "[2009/05/11 07:30:00]" does't match given dateformat. (%Y/%m/k%d) Exiting.. [0m
+[1;32m[ps2_tester] [0mReturn code: 3
+ 
+[1;32m[ps2_tester] [0mTest 6 - bad timeformat
+[5] ./ps2.sh -t %Y/%m/%d -n name data/sin_day_int_part.data
+[1;31m[ps2.sh] ERROR: Line "[2009/05/11 07:30:00]" does't match given dateformat. (%Y/%m/%d) Exiting.. [0m
+[1;32m[ps2_tester] [0mReturn code: 3
+ 
+[1;32m[ps2_tester] [0mTest 8 - not existing option
+[6] ./ps2.sh -z -n name data/sin_day_int_part.data
+[1;31m[ps2.sh] ERROR: Invalid option: '-z' [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 9 - empty data file
+[7] ./ps2.sh -n name data/empty
+[1;31m[ps2.sh] ERROR: data/empty is empty. Aborting. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 9 - bad FPS param
+[8] ./ps2.sh -n name -F zz data/sin_day_int_part.data
+[1;31m[ps2.sh] ERROR: Parameter FPS is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 10 - not existing http link
+[9] ./ps2.sh -n name https://fjdfnsk.com/notexisting
+[1;31m[ps2.sh] ERROR: File https://fjdfnsk.com/notexisting failed to download. Wget output: --2016-05-10 08:08:58-- https://fjdfnsk.com/notexisting Resolving fjdfnsk.com (fjdfnsk.com)... failed: Name or service not known. wget: unable to resolve host address ‘fjdfnsk.com’ Exiting. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 11 - not existing data file
+[10] ./ps2.sh -n name data/notexisting
+[1;31m[ps2.sh] ERROR: data/notexisting is not file. Aborting. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest 12 - http - permission denied
+[11] ./ps2.sh -n name https://users.fit.cvut.cz/~barinkl/data4
+[1;31m[ps2.sh] ERROR: File https://users.fit.cvut.cz/~barinkl/data4 failed to download. Wget output: --2016-05-10 08:08:58-- https://users.fit.cvut.cz/~barinkl/data4 Resolving users.fit.cvut.cz (users.fit.cvut.cz)... 147.32.233.8 Connecting to users.fit.cvut.cz (users.fit.cvut.cz)|147.32.233.8|:443... connected. HTTP request sent, awaiting response... 403 Forbidden 2016-05-10 08:08:58 ERROR 403: Forbidden. Exiting. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - min / max params
+[12] ./ps2.sh -n PS2 -Y min -y min -X auto -x min -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Ymax is in bad format. Has to be 'auto'/'max'/'float'. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[13] ./ps2.sh -n PS2 -Y max -y min -x [2009/05/11 15:24:00] -X [2009/30/11 07:47:00] -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Provided timestamp format & XMAX don't match. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[14] ./ps2.sh -n PS2 -y 23.8 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 23.8 : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;31m[ps2.sh] ERROR: Problem with gnuplot generating images. Gnuplot output: gnuplot> plot '-' using 1:2:2 with lines palette t"" ^ line 3: all points y value undefined! [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.4BQsbPTN0X' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[15] ./ps2.sh -n PS2 -y -PS2 -Y auto -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Ymin is in bad format. Has to be 'auto'/'min'/'float'. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[16] ./ps2.sh -n PS2 -y -12 -Y -92.pp -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Ymax is in bad format. Has to be 'auto'/'max'/'float'. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - not existing config file
+[17] ./ps2.sh -f file.foo -n name data/sin_day_int_part.data
+[1;31m[ps2.sh] ERROR: Configuration file file.foo is not file. Aborting. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - Bad directive in config file
+[18] ./ps2.sh -v -f data/wrong.conf data/short_date
+[1;31m[ps2.sh] ERROR: Parameter FPS is in bad format (-2). Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - FPS option
+[19] ./ps2.sh -F 0 -n PS2 -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Parameter FPS is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[20] ./ps2.sh -F -2 -n PS2 -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Parameter FPS is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - params priority
+[21] ./ps2.sh -v -x 10:30:11 -t %H:%M:%S -n PS2 data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;31m[ps2.sh] ERROR: Provided timestamp format & XMAX don't match. [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.A7RFitlpjd' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[22] ./ps2.sh -v -X 10:30:11 -t %H:%M:%S -n PS2 data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;31m[ps2.sh] ERROR: Provided timestamp format & XMAX don't match. [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.473V8YLu0Y' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - time option
+[23] ./ps2.sh -T 0 -n PS2 -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Parameter time is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[24] ./ps2.sh -T -2 -n PS2 -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Parameter time is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - speed option
+[25] ./ps2.sh -S 0 -n PS2 -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Parameter speed is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[26] ./ps2.sh -S -2 -n PS2 -v data/sin_day_part1
+[1;31m[ps2.sh] ERROR: Parameter speed is in bad format. Has to be int/float value. [0m
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[27] ./ps2.sh -S 420 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 420
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 10.000
+[1;32m[ps2.sh] [0mCreating animation.
+[1;31m[ps2.sh] ERROR: Speed is bigger than number of frames. Only 1 frame with no plots would be rendered. Exiting. [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.fuhYx5ALrX' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - EffectParam: type=anything
+[28] ./ps2.sh -v -n PS2 -e type=foo data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;31m[ps2.sh] ERROR: EffectParams value 'type' (foo) has to be set to 'circles' or 'lines'. [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.g3yl3QA6qP' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[29] ./ps2.sh -v -n PS2 -e type=foo:prom= data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;31m[ps2.sh] ERROR: EffectParams value 'type' (foo) has to be set to 'circles' or 'lines'. [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.OLs1H23QBH' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+[1;32m[ps2_tester] [0mTest - GnuplotParam: unrecognized option
+[30] ./ps2.sh -v -f default.conf -e type=circles -g rm data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mGraphType set to circles.
+[1;32m[ps2.sh] [0mReading input file: data/short_date
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : 400
+[1;32m[ps2.sh] [0mRange on X axis configured to: 09:30:00 : 12:30:00
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 5
+[1;32m[ps2.sh] [0mFPS: 15
+[1;32m[ps2.sh] [0mTime: 6.667
+[1;32m[ps2.sh] [0mCreating animation.
+[1;31m[ps2.sh] ERROR: Problem with gnuplot generating images. Gnuplot output: gnuplot> set rm ^ line 0: unrecognized option - see 'help set'. [0m
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.akGXHKAo6K' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 2
+ 
+Press enter to continue[1;32m[ps2_tester] [0mPhase 2 - correct inputs
+[1;32m[ps2_tester] [0mTest - only name & data file
+[0] ./ps2.sh -n PS2 -v data/sin_day_int_part.data
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_int_part.data
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.KG1r4fQVR1' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - 2 files - in good order
+[1] ./ps2.sh -n PS2 -v data/sin_day_part1 data/sin_day_part2
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part2
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_1/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.woEs463jgE' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - 2 files - in bad order
+[2] ./ps2.sh -n PS2 -v data/sin_day_part2 data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part2
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_2/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.vnxYzJC0Xw' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - 2 files - in bad order
+[3] ./ps2.sh -n PS2 -v data/sin_day_part2 data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part2
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_3/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.PIM3gxtcls' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - link & file - in bad order
+[4] ./ps2.sh -n PS2 -v https://webdev.fit.cvut.cz/~sokolja2/sin_day_part2 data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mDownloading file: https://webdev.fit.cvut.cz/~sokolja2/sin_day_part2
+[1;32m[ps2.sh] [0mFile https://webdev.fit.cvut.cz/~sokolja2/sin_day_part2 downloaded.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_4/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.17doqRWyzW' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - file & link - in bad order
+[5] ./ps2.sh -n PS2 -v data/sin_day_part2 https://webdev.fit.cvut.cz/~sokolja2/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part2
+[1;32m[ps2.sh] [0mDownloading file: https://webdev.fit.cvut.cz/~sokolja2/sin_day_part1
+[1;32m[ps2.sh] [0mFile https://webdev.fit.cvut.cz/~sokolja2/sin_day_part1 downloaded.
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_5/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.SElnQSm3L5' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - min / max params
+[6] ./ps2.sh -n PS2 -Y max -y min -X max -x min -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -99 : 99
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_6/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.SbkDiI8UfT' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[7] ./ps2.sh -n PS2 -Y max -y min -X auto -x min -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -99 : 99
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : 
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_7/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.AlAKkG6H1Z' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[8] ./ps2.sh -n PS2 -Y max -y min -X auto -x auto -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -99 : 99
+[1;32m[ps2.sh] [0mRange on X axis configured to:  : 
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_8/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.YBOpaZHjhN' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[9] ./ps2.sh -n PS2 -Y auto -y auto -X auto -x min -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : 
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_9/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.tqm0Xwc3EK' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[10] ./ps2.sh -n PS2 -Y max -y min  -X "[2009/05/11 15:24:00]" -x "[2009/05/11 07:47:00]" -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -99 : 99
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:47:00] : [2009/05/11 15:24:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_10/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.xOaldPJZh8' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[11] ./ps2.sh -n PS2 -Y max -y min  -X auto -x "[2009/05/11 07:47:00]" -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -99 : 99
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:47:00] : 
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_11/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.WWqbFD36Cx' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[12] ./ps2.sh -n PS2 -Y max -y min  -x "[2009/05/11 15:24:00]" -X "[2009/05/11 07:47:00]" -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -99 : 99
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 15:24:00] : [2009/05/11 07:47:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_12/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.183DgjBQfT' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[13] ./ps2.sh -n PS2 -Y 100 -y -5  -x "[2009/05/11 15:24:00]" -X "[2009/05/11 07:47:00]" -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -5 : 100
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 15:24:00] : [2009/05/11 07:47:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_13/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.cVMTj25yBW' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[14] ./ps2.sh -n PS2 -Y -5 -y 100  -x "[2009/05/11 15:24:00]" -X "[2009/05/11 07:47:00]" -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : -5
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 15:24:00] : [2009/05/11 07:47:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_14/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.vTz9yLdZ3Z' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[15] ./ps2.sh -n PS2 -y -10.2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: -10.2 : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_15/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.KI6D96VIJN' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - speed option
+[16] ./ps2.sh -S 0.5 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 0.5
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 10.000
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_16/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.BC5g0CiQIi' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[17] ./ps2.sh -S 2 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 2
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 10.000
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_17/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.T0isl4zXfB' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[18] ./ps2.sh -S 12.3 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 12.3
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 10.000
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_18/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.xFKNItWAqU' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - time option
+[19] ./ps2.sh -T 1 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 250.000
+[1;32m[ps2.sh] [0mTime: 1
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_19/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.0AIdBuwS2G' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[20] ./ps2.sh -T 0.5 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 500.000
+[1;32m[ps2.sh] [0mTime: 0.5
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_20/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.ccnGWH0mrO' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[21] ./ps2.sh -T 22 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 11.364
+[1;32m[ps2.sh] [0mTime: 22
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_21/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.hEtUEElJ2s' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - FPS option
+[22] ./ps2.sh -F 0.5 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 0.5
+[1;32m[ps2.sh] [0mTime: 500.000
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_22/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.HFFBOML6jN' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[23] ./ps2.sh -F 2 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 2
+[1;32m[ps2.sh] [0mTime: 125.000
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_23/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.F2EIPxbAsO' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - FPS, speed & time combined
+[24] ./ps2.sh -F 20 -T 8 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1.562
+[1;32m[ps2.sh] [0mFPS: 20
+[1;32m[ps2.sh] [0mTime: 8
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_24/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.aXE1j2TeE4' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[25] ./ps2.sh -F 10 -T 8 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 3.125
+[1;32m[ps2.sh] [0mFPS: 10
+[1;32m[ps2.sh] [0mTime: 8
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_25/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.e5Wuze0fTH' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[26] ./ps2.sh -F 80 -S 0.5 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 0.5
+[1;32m[ps2.sh] [0mFPS: 80
+[1;32m[ps2.sh] [0mTime: 6.250
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_26/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.Ijjho3KnoV' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[27] ./ps2.sh -T 12 -S 1.7 -n PS2 -v data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1.7
+[1;32m[ps2.sh] [0mFPS: 12.255
+[1;32m[ps2.sh] [0mTime: 12
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_27/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.kEK6Ehcd8J' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - EffectParam: type=circles
+[28] ./ps2.sh -v -n PS2 -e type=circles data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mGraphType set to circles.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_28/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.uNyppFHPnL' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - EffectParam: type=lines
+[29] ./ps2.sh -v -n PS2 -e type=lines:foo=bar:foo2=bar2 data/sin_day_part1
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mGraphType set to lines.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_part1
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/11 17:49:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_29/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.wJzobcXd2x' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mremoving some of generated animations (PS2 PS2_{1..5})
+[1;32m[ps2_tester] [0mNext animation should be in folder PS2_(i+1)
+[30] ./ps2.sh -n BI-PS2 -v data/sin_day_int_part.data
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/sin_day_int_part.data
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to:  : 
+[1;32m[ps2.sh] [0mRange on X axis configured to: [2009/05/11 07:30:00] : [2009/05/12 07:29:00]
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 1
+[1;32m[ps2.sh] [0mFPS: 25
+[1;32m[ps2.sh] [0mTime: 
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "BI-PS2/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.JYkZkxHW4s' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - config file
+[31] ./ps2.sh -v -f default.conf data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/short_date
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : 400
+[1;32m[ps2.sh] [0mRange on X axis configured to: 09:30:00 : 12:30:00
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 5
+[1;32m[ps2.sh] [0mFPS: 15
+[1;32m[ps2.sh] [0mTime: 6.667
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_30/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.PVJYbSHG7n' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - config & options priority
+[32] ./ps2.sh -v -f default.conf -e type=circles data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mGraphType set to circles.
+[1;32m[ps2.sh] [0mReading input file: data/short_date
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : 400
+[1;32m[ps2.sh] [0mRange on X axis configured to: 09:30:00 : 12:30:00
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 5
+[1;32m[ps2.sh] [0mFPS: 15
+[1;32m[ps2.sh] [0mTime: 6.667
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_31/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.rodvPQJdFQ' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[33] ./ps2.sh -v -f default.conf -e "xformat=%H\:%M:type=circles" -e type=lines data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mXFormat set to %H\.
+[1;32m[ps2.sh] [0mGraphType set to circles.
+[1;32m[ps2.sh] [0mGraphType set to lines.
+[1;32m[ps2.sh] [0mReading input file: data/short_date
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : 400
+[1;32m[ps2.sh] [0mRange on X axis configured to: 09:30:00 : 12:30:00
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 5
+[1;32m[ps2.sh] [0mFPS: 15
+[1;32m[ps2.sh] [0mTime: 6.667
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_32/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.XiWgWFsA7C' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[34] ./ps2.sh -v -f default.conf -e "xformat=%H:type=circles" -e type=lines data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mXFormat set to %H.
+[1;32m[ps2.sh] [0mGraphType set to circles.
+[1;32m[ps2.sh] [0mGraphType set to lines.
+[1;32m[ps2.sh] [0mReading input file: data/short_date
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : 400
+[1;32m[ps2.sh] [0mRange on X axis configured to: 09:30:00 : 12:30:00
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 5
+[1;32m[ps2.sh] [0mFPS: 15
+[1;32m[ps2.sh] [0mTime: 6.667
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "PS2_33/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.qe1TwZUm3X' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 
+[1;32m[ps2_tester] [0mTest - name & legend with spaces
+[35] ./ps2.sh -n "BI PS2" -l "BI-PS2 test graph" -v -f default.conf data/short_date
+[1;32m[ps2.sh] [0mVerbose mode enabled.
+[1;32m[ps2.sh] [0mReading input file: data/short_date
+[1;32m[ps2.sh] [0mDateformat in input files is valid.
+[1;32m[ps2.sh] [0mRange on Y axis configured to: 100 : 400
+[1;32m[ps2.sh] [0mRange on X axis configured to: 09:30:00 : 12:30:00
+[1;32m[ps2.sh] [0mSpeed values are:
+[1;32m[ps2.sh] [0mSpeed: 5
+[1;32m[ps2.sh] [0mFPS: 15
+[1;32m[ps2.sh] [0mTime: 6.667
+[1;32m[ps2.sh] [0mCreating animation.
+[1;32m[ps2.sh] [0m0% done
+[1;32m[ps2.sh] [0m10% done
+[1;32m[ps2.sh] [0m20% done
+[1;32m[ps2.sh] [0m30% done
+[1;32m[ps2.sh] [0m40% done
+[1;32m[ps2.sh] [0m50% done
+[1;32m[ps2.sh] [0m60% done
+[1;32m[ps2.sh] [0m70% done
+[1;32m[ps2.sh] [0m80% done
+[1;32m[ps2.sh] [0m90% done
+[1;32m[ps2.sh] [0m100% done
+[1;32m[ps2.sh] [0mGenerated animation is in folder "BI PS2/anim.mp4"
+[1;32m[ps2.sh] [0mRemoved '/tmp/tmp.FEcUAwYtQ0' temp directory.
+[1;32m[ps2_tester] [0mReturn code: 0
+ 

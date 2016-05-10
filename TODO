@@ -1,0 +1,1 @@
+* Different return codes for different errors (Now only '0' and '2')
