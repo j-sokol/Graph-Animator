@@ -1,10 +1,10 @@
 NAME
 
-  ps2.sh - Script that creates animation of gnuplot frames from plaintext input files.
+    ps2.sh - Script that creates animation of gnuplot frames from plaintext input files.
 
 SYNOPSIS
 
-  ps2.sh [-v] [-V] [-h] [-l LEGEND] [-f CONFIGFILE] [-S SPEED] [-T TIME] [-F FPS] [-e EFFECTPARAMS] [-g GNUPLOTPARAMS] [-y YMIN] [-Y YMAX] [-x XMIN] [-X XMAX] [-t TIMEFORMAT] -n name FILE...
+    ps2.sh [-v] [-V] [-h] [-l LEGEND] [-f CONFIGFILE] [-S SPEED] [-T TIME] [-F FPS] [-e EFFECTPARAMS] [-g GNUPLOTPARAMS] [-y YMIN] [-Y YMAX] [-x XMIN] [-X XMAX] [-t TIMEFORMAT] -n name FILE...
 
 DESCRIPTION
 
