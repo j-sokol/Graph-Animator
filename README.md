@@ -33,6 +33,7 @@ OPTIONS
     -n NAME          Name of the directory where animation will be saved. If there is already directory with same name, new folder will be created with suffix "_i", where i=max(i,0)+1. All characters from name  except :alnum: and ' _.-' will be removed.
 
 CONFIG FILE
+    
     The file is plain ASCII text, with columns separated by spaces or tab characters. The first column specifies name of directive. Second column describes value of given directive.
     
     Notes:
